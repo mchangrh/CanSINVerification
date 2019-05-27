@@ -18,21 +18,18 @@ function getRegion(sin) {
     return maps[sin.charAt(0)];
 }
 
-// https://gist.github.com/ShirtlessKirk/2134376
-// Phil Green (ShirtlessKirk2)
-function luhnChk2(arr) {
-    return function (ccNum) {
-        var
-            len = ccNum.length,
-            bit = 1,
-            sum = 0,
-            val;
-        while (len) {
-            val = parseInt(ccNum.charAt(--len), 10);
-            sum += (bit ^= 1) ? arr[val] : val;
-        }
-        return sum && sum % 10 === 0;
-    };
+// Luhn algorithm validator, by Avraham Plotnitzky. (aviplot at gmail)
+function luhnCheckFast(luhn) {
+    var ca, sum = 0, mul = 0;
+    var len = luhn.length;
+    while (len--)
+    {
+        ca = parseInt(luhn.charAt(len), 10) << mul;
+        sum += ca - (ca > 9) * 9; // sum += ca - (-(ca>9))|9
+        // 1 <--> 0 toggle.
+        mul ^= 1; // mul = 1 - mul;
+    }
+    return (sum % 10 === 0) && (sum > 0);
 }
 
 // Set Valid classes
@@ -54,7 +51,7 @@ function verifySIN(sin, result) {
         // set validity
         result.valid = false;
         result.reason = "SIN Invalid: Incomplete";
-    } else if (!luhnChk2(sin)) { // Fail if luhn check is invalid
+    } else if (!luhnCheckFast(sin)) { // Fail if luhn check is invalid
         // set validity
         result.valid = false;
         result.reason = "SIN Invalid: Failed Check";
